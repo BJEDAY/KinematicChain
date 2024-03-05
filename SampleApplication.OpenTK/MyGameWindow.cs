@@ -12,6 +12,46 @@ using Vector2 = System.Numerics.Vector2;
 
 namespace SampleApplication.OpenTK;
 
+struct RobotSettings
+{
+    public float ArmLen1;
+    public float ArmLen2;
+    public float StartArmAngle1;
+    public float StartArmAngle2;
+    public float EndArmAngle1;
+    public float EndArmAngle2;
+    public bool AlternativeStart;
+    public bool AlternativeEnd;
+    public RobotSettings()
+    {
+        StartArmAngle1 = 0.0f;
+        StartArmAngle2 = 0.0f;
+        EndArmAngle1 = 0.0f;
+        EndArmAngle2 = 0.0f;
+        ArmLen1 = 0.0f;
+        ArmLen2 = 0.0f;
+        AlternativeStart = false;
+        AlternativeEnd = false;
+    }
+}
+
+struct SimulationSettings
+{
+    public bool EditMode;
+    public bool PathFindingMode;
+    public bool IsSimulating;
+    public float SimulationTime;
+    public float SimulationSpeed;
+    public float Delta;
+
+    public SimulationSettings()
+    {
+        EditMode = true; PathFindingMode = false;
+        IsSimulating = false; SimulationTime = 0.0f;
+        SimulationSpeed = 0.0f; Delta = 0.0f;
+    }
+}
+
 internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 {
     private static readonly double[] SampleData1 = Enumerable.Range(0, 256).Select(s => Math.Cos(s / 2.0d / Math.PI)).ToArray();
@@ -32,10 +72,13 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
     private bool ShowDockingDemo = true;
 
+    RobotSettings RobotSett = new RobotSettings();
+    SimulationSettings SimulationSettings = new SimulationSettings();  
+
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
     {
-        Controller = new ImGuiController(this, "Roboto-Regular.ttf", 17.0f);
+        Controller = new ImGuiController(this, "Roboto-Regular.ttf", 20.0f);
 
         ImPlotContext = ImPlot.CreateContext();
 
@@ -69,48 +112,75 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         ImGui.SetNextWindowSize(new Vector2(800, 500), ImGuiCond.Once);
 
-        if (ShowDockingDemo)
-        {
-            DrawDockSpaceOptionsBar(ref ShowDockingDemo);
-        }
 
-
-        if (ImGui.Begin("Hello, world!"))
+        if(ImGui.Begin("Settings"))
         {
-            if (ImPlot.BeginPlot("Sample plot"))
+            ImGui.Text("Select program working mode:");
+            if(ImGui.Checkbox("Edit", ref SimulationSettings.EditMode))
             {
-                ImPlot.SetupAxes("X", "Y");
-
-                ImPlot.SetNextLineStyle(Color1.ToVector4());
-                ImPlot.PlotLine("Sample data 1", ref SampleData1[0], SampleData1.Length);
-
-                ImPlot.SetNextLineStyle(Color2.ToVector4());
-                ImPlot.PlotLine("Sample data 2", ref SampleData2[0], SampleData2.Length);
-
-                ImPlot.EndPlot();
+                SimulationSettings.PathFindingMode = false;
+            }
+            ImGui.SameLine();
+            if(ImGui.Checkbox("Path finding", ref SimulationSettings.PathFindingMode))
+            {
+                SimulationSettings.EditMode = false;
             }
 
-            ImGui.ColorEdit4("Color 1", Color1.AsSpan(), ImGuiColorEditFlags.NoInputs);
-            ImGui.ColorEdit4("Color 2", Color2.AsSpan(), ImGuiColorEditFlags.NoInputs);
+            ImGui.Text("Edit options:");
+            if (ImGui.TreeNode("Lenghts"))
+            {
+                ImGui.SliderFloat("Arm1 Len", ref RobotSett.ArmLen1, 0.0f, 10.0f);
+                ImGui.SliderFloat("Arm2 Len", ref RobotSett.ArmLen2, 0.0f, 10.0f);
+                ImGui.TreePop();
+            }
+            if(ImGui.TreeNode("Start"))
+            {
+                ImGui.SliderAngle("Arm1 Angle", ref RobotSett.StartArmAngle1);
+                ImGui.SliderAngle("Arm2 Angle", ref RobotSett.StartArmAngle2);
+                ImGui.Checkbox("Alternative Start", ref RobotSett.AlternativeStart);
+                ImGui.TreePop();
+            }
+            if (ImGui.TreeNode("End"))
+            {
+                ImGui.SliderAngle("Arm1 Angle", ref RobotSett.EndArmAngle1);
+                ImGui.SliderAngle("Arm2 Angle", ref RobotSett.EndArmAngle2);
+                ImGui.Checkbox("Alternative Start", ref RobotSett.AlternativeEnd);
+                ImGui.TreePop();
+            }
 
-            ImGui.Checkbox("Show ImGui Demo", ref ShowImGuiDemo);
-            ImGui.Checkbox("Show ImPlot Demo", ref ShowImPlotDemo);
-            ImGui.Checkbox("Show Docking Demo", ref ShowDockingDemo);
+            ImGui.Text("Path finding options:");
+            if(ImGui.TreeNode("Path finding"))
+            {
+                if(ImGui.Button("Update configuration space"))
+                {
+                    // odpal funkcje która to ogarnie
+                }
+                if(ImGui.Button("Flood fill"))
+                {
+                    // odpal funkcje która to ogarnie
+                }
+                ImGui.TreePop();
+            }
+            if(ImGui.TreeNode("Simulation"))
+            {
+                ImGui.Text("Simulation: "); ImGui.SameLine(); ImGui.Text(SimulationSettings.IsSimulating.ToString());
+                ImGui.Text("Time: "); ImGui.SameLine(); ImGui.Text(SimulationSettings.SimulationTime.ToString());
+                if (ImGui.Button("Start")) { }
+                ImGui.SameLine();
+                if (ImGui.Button("Pause")) { }
+                ImGui.SameLine();
+                if (ImGui.Button("Stop")) { }
+                ImGui.SliderFloat("Delta", ref SimulationSettings.Delta, 0.01f, 1.0f);
+                ImGui.SliderFloat("Speed", ref SimulationSettings.SimulationSpeed, 0.01f, 1.0f);
+                ImGui.TreePop();
+            }
         }
+
+
+        
 
         ImGui.End();
 
-        SampleExtraFontDemo();
-
-        if (ShowImGuiDemo)
-        {
-            ImGui.ShowDemoWindow(ref ShowImGuiDemo);
-        }
-
-        if (ShowImPlotDemo)
-        {
-            ImPlot.ShowDemoWindow(ref ShowImPlotDemo);
-        }
 
         Controller.Render();
 
@@ -237,3 +307,23 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
     #endregion
 }
+
+
+
+// NOT WORKING :) Don't know why.
+
+//if(ImGui.BeginTabBar("TestTabBar",ImGuiTabBarFlags.None))
+//{
+//      if(ImGui.BeginTabItem("1"))
+//        {
+//            ImGui.SliderAngle("Arm1 Angle", ref Arm1Angle);
+//            ImGui.EndTabItem();
+//        }
+
+//      if(ImGui.BeginTabItem("2"))
+//        {
+//            ImGui.SliderAngle("Arm1 Angle", ref Arm1Angle);
+//            ImGui.EndTabItem();
+//        }
+//        ImGui.EndTabBar();
+//}
