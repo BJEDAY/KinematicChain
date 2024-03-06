@@ -39,7 +39,7 @@ public abstract class GameWindowBaseWithDebugContext : GameWindowBase
 
     private static NativeWindowSettings UpdateSettings(NativeWindowSettings settings)
     {
-        settings.APIVersion = new Version(4, 5);
+        settings.APIVersion = new Version(4, 2);
 
         settings.Flags |= ContextFlags.Debug | ContextFlags.ForwardCompatible;
 

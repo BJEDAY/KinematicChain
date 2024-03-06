@@ -8,7 +8,8 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using Vector2 = System.Numerics.Vector2;
+//using Vector2 = System.Numerics.Vector2;
+using Vector2 = OpenTK.Mathematics.Vector2;
 
 namespace SampleApplication.OpenTK;
 
@@ -52,6 +53,12 @@ struct SimulationSettings
     }
 }
 
+struct ViewPerspectiveSettings
+{
+    public float fov, f, n;
+    public ViewPerspectiveSettings(float Fov, float F, float N) { fov = Fov; f = F; n = N; }
+}
+
 internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 {
     private static readonly double[] SampleData1 = Enumerable.Range(0, 256).Select(s => Math.Cos(s / 2.0d / Math.PI)).ToArray();
@@ -72,8 +79,11 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
     private bool ShowDockingDemo = true;
 
+    // My data
     RobotSettings RobotSett = new RobotSettings();
-    SimulationSettings SimulationSettings = new SimulationSettings();  
+    SimulationSettings SimulationSettings = new SimulationSettings();
+    Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
+    MrRobot robot;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -85,6 +95,10 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         ImPlot.SetCurrentContext(ImPlotContext);
 
         ImPlot.SetImGuiContext(Controller.Context);
+
+        SetupShaders();
+        SetupCamera();
+        robot = new MrRobot(new Vector2(0.5f, 1.0f), new Vector2(MathHelper.DegreesToRadians(0), MathHelper.DegreesToRadians(0)));
     }
 
     protected override void Dispose(bool disposing)
@@ -105,12 +119,26 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         Controller.Update((float)args.Time);
     }
 
+    protected void SetupShaders()
+    {
+        // instead of using path "Shaders/ShaderVerts.glsl and using option "copy to output directory" the path is given directly to the source of shaders (every change gonna be instant)
+        shader = new Shader("../../../Shaders/ShaderVert.glsl", "../../../Shaders/ShaderFrag.glsl");
+    }
+
+    protected void SetupCamera()
+    {
+        //Camera initialization
+        camera = new Camera();
+        perspectiveSettings = new ViewPerspectiveSettings(45.0f, 30.0f, 0.5f);
+        camera.UpdateProjectionMatrix((float)ClientSize.X, (float)ClientSize.Y, perspectiveSettings.fov, perspectiveSettings.n, perspectiveSettings.f);
+    }
+
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         GL.ClearColor(Color.CornflowerBlue);
         GL.Clear(ClearBufferMask.ColorBufferBit);
 
-        ImGui.SetNextWindowSize(new Vector2(800, 500), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(800, 500), ImGuiCond.Once);
 
 
         if(ImGui.Begin("Settings"))
@@ -177,10 +205,11 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         }
 
 
-        
-
         ImGui.End();
 
+        // Not working anymore...
+        //GL.LineWidth(5);
+        robot.Draw(shader,camera.viewMatrix,camera.projectionMatrix);
 
         Controller.Render();
 
@@ -190,7 +219,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     protected override void OnResize(ResizeEventArgs e)
     {
         base.OnResize(e);
-
+        if(camera != null) { camera.UpdateProjectionMatrix((float)ClientSize.X, (float)ClientSize.Y, perspectiveSettings.fov, perspectiveSettings.n, perspectiveSettings.f); }
         GL.Viewport(0, 0, e.Width, e.Height);
     }
 
@@ -285,7 +314,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
     private void SampleExtraFontDemo()
     {
-        ImGui.SetNextWindowSize(new Vector2(400, 100), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(400, 100), ImGuiCond.Once);
 
         if (ImGui.Begin("Sample: extra font"))
         {
