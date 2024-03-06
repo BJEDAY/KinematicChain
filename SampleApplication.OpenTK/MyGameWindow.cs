@@ -157,14 +157,14 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             ImGui.Text("Edit options:");
             if (ImGui.TreeNode("Lenghts"))
             {
-                ImGui.SliderFloat("Arm1 Len", ref RobotSett.ArmLen1, 0.0f, 10.0f);
-                ImGui.SliderFloat("Arm2 Len", ref RobotSett.ArmLen2, 0.0f, 10.0f);
+                if(ImGui.SliderFloat("Arm1 Len", ref RobotSett.ArmLen1, 0.0f, 10.0f)) { robot.len.X = RobotSett.ArmLen1; }                
+                if(ImGui.SliderFloat("Arm2 Len", ref RobotSett.ArmLen2, 0.0f, 10.0f)) { robot.len.Y = RobotSett.ArmLen2; }
                 ImGui.TreePop();
             }
             if(ImGui.TreeNode("Start"))
             {
-                ImGui.SliderAngle("Arm1 Angle", ref RobotSett.StartArmAngle1);
-                ImGui.SliderAngle("Arm2 Angle", ref RobotSett.StartArmAngle2);
+                if(ImGui.SliderAngle("Arm1 Angle", ref RobotSett.StartArmAngle1)) {  robot.angle.X = RobotSett.StartArmAngle1; }
+                if(ImGui.SliderAngle("Arm2 Angle", ref RobotSett.StartArmAngle2)) { robot.angle.Y = RobotSett.StartArmAngle2; }
                 ImGui.Checkbox("Alternative Start", ref RobotSett.AlternativeStart);
                 ImGui.TreePop();
             }
