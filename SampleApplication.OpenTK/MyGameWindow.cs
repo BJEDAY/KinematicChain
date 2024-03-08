@@ -350,6 +350,21 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             var delta = e.Delta.Y;
             camera.ChangeDistance((float)(delta * 0.01f));
         }
+
+        if (this.MouseState[MouseButton.Middle])
+        {
+            //Console.WriteLine("Middle Man");
+            var res = GetSpacePos();
+
+            var (c1, c2) = InverseKinematic(res);
+            //Console.WriteLine($"Pozycja w przestrzeni sceny: {res}");
+            if (!float.IsNaN(c1.X) && !float.IsNaN(c2.X))
+            {
+                robot.angle.X = c1.X;
+                robot.angle.Y = c1.Y;
+            }
+
+        }
     }
 
     protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -361,43 +376,49 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             //Console.WriteLine(this.MousePosition);
             // need to modify this value so in center it's 0,0 (need to subsract half of screen size X and Y)
 
-
-            var pos1 = new Vector2(MousePosition.X - ClientSize.X / 2,ClientSize.Y/2-MousePosition.Y);
-            Console.WriteLine($"Remaped values: {pos1}");
-
-            var test_pos = new Vector4(0, 1, 0, 1);
-            var test_screen_pos = test_pos * camera.viewMatrix * camera.projectionMatrix;
-            test_screen_pos /= test_screen_pos.W;
-            float deep = (float)test_screen_pos.Z;
-
-
-            //test_screen_pos = test_screen_pos * camera.projectionMatrix.Inverted() * camera.viewMatrix.Inverted();
-            //test_screen_pos /= test_screen_pos.W;
+            var res = GetSpacePos();
             
-
-            Console.WriteLine($"W przestrzeni NDC ekranu wektor (0,1,0) to {test_screen_pos.X}, {test_screen_pos.Y}");
-            Console.WriteLine($"Pozycja odczytana przez MousePosition to {MousePosition}");
-
-            var screen_pos = MousePosition;
-            // Step 1: Change position in pixels to NDC
-            var NDC = new Vector2((2*MousePosition.X/ClientSize.X -1), -(2*MousePosition.Y/ClientSize.Y-1));
-            Console.WriteLine($"Pozycja NDC obliczona z MousePosition to {NDC}");
-            // Step 2: Change screen NDC position to space position
-            Vector4 pos = new Vector4(NDC.X,NDC.Y, deep, 1);
-            pos = pos * camera.projectionMatrix.Inverted() * camera.viewMatrix.Inverted();
-            pos.X /= pos.W;
-            pos.Y /= pos.W;
-            pos.Z /= pos.W;
-            pos.W /= pos.W;
-            Vector2 res = new(pos.X, pos.Y);
             var (c1,c2) = InverseKinematic(res);
             Console.WriteLine($"Pozycja w przestrzeni sceny: {res}");
             if(!float.IsNaN(c1.X)  && !float.IsNaN(c2.X))
             {
-                //robot.angle.X = c1.X;
-                //robot.angle.Y = c1.Y;
+                robot.angle.X = c1.X;
+                robot.angle.Y = c1.Y;
             }
         }
+    }
+
+    protected Vector2 GetSpacePos()
+    {
+        var pos1 = new Vector2(MousePosition.X - ClientSize.X / 2, ClientSize.Y / 2 - MousePosition.Y);
+        //Console.WriteLine($"Remaped values: {pos1}");
+
+        var test_pos = new Vector4(0, 1, 0, 1);
+        var test_screen_pos = test_pos * camera.viewMatrix * camera.projectionMatrix;
+        test_screen_pos /= test_screen_pos.W;
+        float deep = (float)test_screen_pos.Z;
+
+
+        //test_screen_pos = test_screen_pos * camera.projectionMatrix.Inverted() * camera.viewMatrix.Inverted();
+        //test_screen_pos /= test_screen_pos.W;
+
+
+        //Console.WriteLine($"W przestrzeni NDC ekranu wektor (0,1,0) to {test_screen_pos.X}, {test_screen_pos.Y}");
+        //Console.WriteLine($"Pozycja odczytana przez MousePosition to {MousePosition}");
+
+        var screen_pos = MousePosition;
+        // Step 1: Change position in pixels to NDC
+        var NDC = new Vector2((2 * MousePosition.X / ClientSize.X - 1), -(2 * MousePosition.Y / ClientSize.Y - 1));
+        //Console.WriteLine($"Pozycja NDC obliczona z MousePosition to {NDC}");
+        // Step 2: Change screen NDC position to space position
+        Vector4 pos = new Vector4(NDC.X, NDC.Y, deep, 1);
+        pos = pos * camera.projectionMatrix.Inverted() * camera.viewMatrix.Inverted();
+        pos.X /= pos.W;
+        pos.Y /= pos.W;
+        pos.Z /= pos.W;
+        pos.W /= pos.W;
+        Vector2 res = new(pos.X, -pos.Y);
+        return res;
     }
 
     protected (Vector2 config, Vector2 alternativeConfig) InverseKinematic(Vector2 endPos)
@@ -426,7 +447,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         var MySecondAlfa1 = Math.PI / 2 - SecondAlfa1;
 
         //Console.WriteLine($"MyAlfa1 angle: {MathHelper.RadiansToDegrees(MyAlfa1)}");
-        //.WriteLine($"MyAlfa2 angle: {MathHelper.RadiansToDegrees(MyAlfa2)}");
+        //Console.WriteLine($"MyAlfa2 angle: {MathHelper.RadiansToDegrees(MyAlfa2)}");
 
         conf = new((float)MyAlfa1, (float)MyAlfa2);
         altConf = new((float)MySecondAlfa1, (float)-MyAlfa2);
