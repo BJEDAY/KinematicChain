@@ -168,7 +168,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             {
                 ImGui.SliderAngle("Arm1 Angle", ref robot.angle.X);   // ref RobotSett.StartArmAngle1)) {  //robot.angle.X = RobotSett.StartArmAngle1; }
                 ImGui.SliderAngle("Arm2 Angle", ref robot.angle.Y);  // { robot.angle.Y = RobotSett.StartArmAngle2; }
-                ImGui.Checkbox("Alternative Start", ref RobotSett.AlternativeStart);
+                ImGui.Checkbox("Alternative Start", ref robot.alt_angle);
                 ImGui.TreePop();
             }
             if (ImGui.TreeNode("End"))
@@ -362,6 +362,8 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             {
                 robot.angle.X = c1.X;
                 robot.angle.Y = c1.Y;
+                robot.alternative_angle.X = c2.X;
+                robot.alternative_angle.Y = c2.Y;
             }
 
         }
@@ -384,6 +386,8 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             {
                 robot.angle.X = c1.X;
                 robot.angle.Y = c1.Y;
+                robot.alternative_angle.X = c2.X;
+                robot.alternative_angle.Y = c2.Y;
             }
         }
     }
