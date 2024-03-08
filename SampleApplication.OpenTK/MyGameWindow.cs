@@ -8,6 +8,8 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+
 //using Vector2 = System.Numerics.Vector2;
 using Vector2 = OpenTK.Mathematics.Vector2;
 
@@ -83,7 +85,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     RobotSettings RobotSett = new RobotSettings();
     SimulationSettings SimulationSettings = new SimulationSettings();
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
-    MrRobot robot;
+    MrRobot robot; Line testLine;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -99,6 +101,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         SetupShaders();
         SetupCamera();
         robot = new MrRobot(new Vector2(0.5f, 1.0f), new Vector2(MathHelper.DegreesToRadians(0), MathHelper.DegreesToRadians(0)));
+        testLine = new Line();
     }
 
     protected override void Dispose(bool disposing)
@@ -163,8 +166,8 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             }
             if(ImGui.TreeNode("Start"))
             {
-                if(ImGui.SliderAngle("Arm1 Angle", ref RobotSett.StartArmAngle1)) {  robot.angle.X = RobotSett.StartArmAngle1; }
-                if(ImGui.SliderAngle("Arm2 Angle", ref RobotSett.StartArmAngle2)) { robot.angle.Y = RobotSett.StartArmAngle2; }
+                ImGui.SliderAngle("Arm1 Angle", ref robot.angle.X);   // ref RobotSett.StartArmAngle1)) {  //robot.angle.X = RobotSett.StartArmAngle1; }
+                ImGui.SliderAngle("Arm2 Angle", ref robot.angle.Y);  // { robot.angle.Y = RobotSett.StartArmAngle2; }
                 ImGui.Checkbox("Alternative Start", ref RobotSett.AlternativeStart);
                 ImGui.TreePop();
             }
@@ -209,8 +212,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         // Not working anymore...
         //GL.LineWidth(5);
-        robot.Draw(shader,camera.viewMatrix,camera.projectionMatrix);
 
+        robot.Draw(shader,camera.viewMatrix,camera.projectionMatrix);
+        //testLine.Draw(shader, camera.viewMatrix, camera.projectionMatrix);
         Controller.Render();
 
         SwapBuffers();
@@ -332,6 +336,102 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         }
 
         ImGui.End();
+    }
+
+    protected override void OnMouseMove(MouseMoveEventArgs e)
+    {
+        base.OnMouseMove(e);
+
+        
+
+        //if(this.MouseState.IsButtonPressed(MouseButton.Right))
+        if (this.MouseState[MouseButton.Right])
+        {
+            var delta = e.Delta.Y;
+            camera.ChangeDistance((float)(delta * 0.01f));
+        }
+    }
+
+    protected override void OnMouseDown(MouseButtonEventArgs e)
+    {
+        base.OnMouseDown(e);
+
+        if (this.MouseState[MouseButton.Left])
+        {
+            //Console.WriteLine(this.MousePosition);
+            // need to modify this value so in center it's 0,0 (need to subsract half of screen size X and Y)
+
+
+            var pos1 = new Vector2(MousePosition.X - ClientSize.X / 2,ClientSize.Y/2-MousePosition.Y);
+            Console.WriteLine($"Remaped values: {pos1}");
+
+            var test_pos = new Vector4(0, 1, 0, 1);
+            var test_screen_pos = test_pos * camera.viewMatrix * camera.projectionMatrix;
+            test_screen_pos /= test_screen_pos.W;
+            float deep = (float)test_screen_pos.Z;
+
+
+            //test_screen_pos = test_screen_pos * camera.projectionMatrix.Inverted() * camera.viewMatrix.Inverted();
+            //test_screen_pos /= test_screen_pos.W;
+            
+
+            Console.WriteLine($"W przestrzeni NDC ekranu wektor (0,1,0) to {test_screen_pos.X}, {test_screen_pos.Y}");
+            Console.WriteLine($"Pozycja odczytana przez MousePosition to {MousePosition}");
+
+            var screen_pos = MousePosition;
+            // Step 1: Change position in pixels to NDC
+            var NDC = new Vector2((2*MousePosition.X/ClientSize.X -1), -(2*MousePosition.Y/ClientSize.Y-1));
+            Console.WriteLine($"Pozycja NDC obliczona z MousePosition to {NDC}");
+            // Step 2: Change screen NDC position to space position
+            Vector4 pos = new Vector4(NDC.X,NDC.Y, deep, 1);
+            pos = pos * camera.projectionMatrix.Inverted() * camera.viewMatrix.Inverted();
+            pos.X /= pos.W;
+            pos.Y /= pos.W;
+            pos.Z /= pos.W;
+            pos.W /= pos.W;
+            Vector2 res = new(pos.X, pos.Y);
+            var (c1,c2) = InverseKinematic(res);
+            Console.WriteLine($"Pozycja w przestrzeni sceny: {res}");
+            if(!float.IsNaN(c1.X)  && !float.IsNaN(c2.X))
+            {
+                //robot.angle.X = c1.X;
+                //robot.angle.Y = c1.Y;
+            }
+        }
+    }
+
+    protected (Vector2 config, Vector2 alternativeConfig) InverseKinematic(Vector2 endPos)
+    {
+        Vector2 conf = new(0, 0);
+        Vector2 altConf = new(0, 0);
+
+        float l1 = robot.len.X;
+        float l2 = robot.len.Y;
+        float lsquared = endPos.X*endPos.X+endPos.Y*endPos.Y;
+
+        var Beta = -Math.Atan2(endPos.Y, endPos.X);
+        //Console.WriteLine($"Beta angle: {MathHelper.RadiansToDegrees(Beta)}");
+
+        var Alfa2 = Math.Acos((lsquared - l1 * l1 - l2 * l2) / (-2 * l1 *l2));
+        //Console.WriteLine($"Beta angle: {MathHelper.RadiansToDegrees(Alfa2)}");
+        var MyAlfa2 = Math.PI - Alfa2;
+
+        var Phi = Math.Acos((l2 *l2 - l1*l1 - lsquared)/(-2*l1*Math.Sqrt(lsquared)));
+        //Console.WriteLine($"Phi angle: {MathHelper.RadiansToDegrees(Phi)}");
+
+        var Alfa1 = Beta + Phi;
+        var MyAlfa1 = Math.PI/2 - Alfa1;
+
+        var SecondAlfa1 = Beta - Phi;
+        var MySecondAlfa1 = Math.PI / 2 - SecondAlfa1;
+
+        //Console.WriteLine($"MyAlfa1 angle: {MathHelper.RadiansToDegrees(MyAlfa1)}");
+        //.WriteLine($"MyAlfa2 angle: {MathHelper.RadiansToDegrees(MyAlfa2)}");
+
+        conf = new((float)MyAlfa1, (float)MyAlfa2);
+        altConf = new((float)MySecondAlfa1, (float)-MyAlfa2);
+
+        return (conf, altConf);
     }
 
     #endregion

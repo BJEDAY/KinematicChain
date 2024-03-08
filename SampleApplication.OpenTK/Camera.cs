@@ -37,6 +37,7 @@ namespace SampleApplication.OpenTK
             Up = Vector3.Cross(Direction, Right);
             UpdateViewMatrix();
             projectionMatrix = Matrix4.Identity;
+
         }
 
         public void UpdateViewMatrix()
@@ -69,6 +70,7 @@ namespace SampleApplication.OpenTK
             Vector4 Row3 = new Vector4(0, 0, val3, val4);
             Vector4 Row4 = new Vector4(0, 0, 1, 0);
             projectionMatrix = new Matrix4(Row1, Row2, Row3, Row4);
+            //projectionMatrix = Matrix4.CreateOrthographic(width, height, n, f);
         }
 
         public void ChangeDistance(float z)
