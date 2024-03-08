@@ -373,25 +373,34 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     {
         base.OnMouseDown(e);
 
-        if (this.MouseState[MouseButton.Left])
-        {
-            //Console.WriteLine(this.MousePosition);
-            // need to modify this value so in center it's 0,0 (need to subsract half of screen size X and Y)
+        //if (this.MouseState[MouseButton.Left])
+        //{
+        //    //Console.WriteLine(this.MousePosition);
+        //    // need to modify this value so in center it's 0,0 (need to subsract half of screen size X and Y)
 
-            var res = GetSpacePos();
+        //    var res = GetSpacePos();
             
-            var (c1,c2) = InverseKinematic(res);
-            Console.WriteLine($"Pozycja w przestrzeni sceny: {res}");
-            if(!float.IsNaN(c1.X)  && !float.IsNaN(c2.X))
-            {
-                robot.angle.X = c1.X;
-                robot.angle.Y = c1.Y;
-                robot.alternative_angle.X = c2.X;
-                robot.alternative_angle.Y = c2.Y;
-            }
-        }
+        //    var (c1,c2) = InverseKinematic(res);
+        //    Console.WriteLine($"Pozycja w przestrzeni sceny: {res}");
+        //    if(!float.IsNaN(c1.X)  && !float.IsNaN(c2.X))
+        //    {
+        //        robot.angle.X = c1.X;
+        //        robot.angle.Y = c1.Y;
+        //        robot.alternative_angle.X = c2.X;
+        //        robot.alternative_angle.Y = c2.Y;
+        //    }
+        //}
     }
 
+    protected override void OnKeyDown(KeyboardKeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if (this.KeyboardState[Keys.A])
+        {
+            robot.alt_angle = !robot.alt_angle;
+        }
+    }
     protected Vector2 GetSpacePos()
     {
         var pos1 = new Vector2(MousePosition.X - ClientSize.X / 2, ClientSize.Y / 2 - MousePosition.Y);
