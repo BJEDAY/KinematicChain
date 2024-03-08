@@ -160,8 +160,8 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             ImGui.Text("Edit options:");
             if (ImGui.TreeNode("Lenghts"))
             {
-                if(ImGui.SliderFloat("Arm1 Len", ref RobotSett.ArmLen1, 0.0f, 10.0f)) { robot.len.X = RobotSett.ArmLen1; }                
-                if(ImGui.SliderFloat("Arm2 Len", ref RobotSett.ArmLen2, 0.0f, 10.0f)) { robot.len.Y = RobotSett.ArmLen2; }
+                ImGui.SliderFloat("Arm1 Len", ref robot.len.X, 0.0f, 10.0f); //{ robot.len.X = RobotSett.ArmLen1; }                
+                ImGui.SliderFloat("Arm2 Len", ref robot.len.Y, 0.0f, 10.0f); //{ robot.len.Y = RobotSett.ArmLen2; }
                 ImGui.TreePop();
             }
             if(ImGui.TreeNode("Start"))
