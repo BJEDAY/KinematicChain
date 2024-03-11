@@ -223,7 +223,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         robot.Draw(shader,camera.viewMatrix,camera.projectionMatrix);
         //testLine.Draw(shader, camera.viewMatrix, camera.projectionMatrix);
         foreach(var obs in obstacles) { obs.Draw(shader, camera.viewMatrix, camera.projectionMatrix); }
+
         
+
         Controller.Render();
 
         

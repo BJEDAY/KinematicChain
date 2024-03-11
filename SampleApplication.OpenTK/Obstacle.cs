@@ -17,6 +17,7 @@ namespace SampleApplication.OpenTK
 
         public Vector2 pos;
         public Vector2 size;
+        public Vector3 color;
 
         // Basic line vertices and indices
         float[] verts;
@@ -26,6 +27,8 @@ namespace SampleApplication.OpenTK
         {
             pos = p;
             size = s;
+            Random rand = new Random();
+            color = new Vector3((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble());
             verts = new float[12] { -1.0f, -1.0f, 0.0f, 
                                     1.0f, -1.0f, 0.0f, 
                                     1.0f, 1.0f, 0.0f,                    
@@ -82,7 +85,7 @@ namespace SampleApplication.OpenTK
             var t = Matrix4.CreateTranslation(pos.X,pos.Y,0.0f);
             var s = Matrix4.CreateScale(size.X, size.Y,1.0f);
             shader.SetMatrix4("model", s*t);
-            shader.SetVec3("color", new Vector3(1, 1, 0));
+            shader.SetVec3("color", color);
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
