@@ -3,6 +3,7 @@ using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,9 +16,35 @@ namespace SampleApplication.OpenTK
         public int VBO { get; set; }
         public int EBO { get; set; }
 
+        public string Name;
         public Vector2 pos;
         public Vector2 size;
         public Vector3 color;
+
+
+        public Span<float> Position
+        {
+            get {
+                    return MemoryMarshal.CreateSpan(ref pos.X,2);
+                }
+        }
+
+        public Span<float> Size
+        {
+            get
+            {
+                return MemoryMarshal.CreateSpan(ref size.X, 2);
+            }
+        }
+
+        public Span<float> Color
+        {
+            get
+            {
+                return MemoryMarshal.CreateSpan(ref color.X, 3);
+            }
+        }
+
 
         // Basic line vertices and indices
         float[] verts;

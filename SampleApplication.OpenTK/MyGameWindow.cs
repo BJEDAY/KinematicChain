@@ -86,6 +86,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     SimulationSettings SimulationSettings = new SimulationSettings();
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
     MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis; bool CreatingObstacle;
+    int ObstacleCount;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -106,6 +107,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         //obstacles.Add(new Obstacle());
         axis = new Axis();
         CreatingObstacle = false;
+        ObstacleCount = 0;
     }
 
     protected override void Dispose(bool disposing)
@@ -210,6 +212,30 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 ImGui.SliderFloat("Speed", ref SimulationSettings.SimulationSpeed, 0.01f, 1.0f);
                 ImGui.TreePop();
             }
+
+            ImGui.Text("Obstacles:");
+            for (int i = 0; i < obstacles.Count; i++)
+            {
+                var currentObstacle = obstacles[i];
+                //ImGui.Text($"{obstacles[i].Name}");
+
+                if (ImGui.TreeNode($"{obstacles[i].Name}"))
+                {
+                    //ImGui.DragFloat2("Position", new Span<float>(new float[]{currentObstacle.pos.X, currentObstacle.pos.Y}) );
+                    ImGui.DragFloat2("Position", currentObstacle.Position,0.05f);
+                    ImGui.DragFloat2("Size", currentObstacle.Size,0.05f);
+                    ImGui.DragFloat3("Color", currentObstacle.Color,0.001f,0.0f,1.0f,"%.2f");
+                    ImGui.TreePop();
+                }
+
+            }
+
+
+            
+            //if (ImGui.TreeNode("Obstacles"))
+            //{
+                //ImGui.TreePop();
+            //}
         }
 
 
@@ -517,6 +543,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         Obstacle obstacle = new Obstacle();
         obstacle.pos = pos;
         obstacle.size = new(0.0f, 0.0f);
+        
+        ObstacleCount ++;
+        obstacle.Name = $"Obstacle {ObstacleCount}";
         obstacles.Add(obstacle);
     }
 
