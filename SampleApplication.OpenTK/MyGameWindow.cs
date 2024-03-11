@@ -85,7 +85,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     RobotSettings RobotSett = new RobotSettings();
     SimulationSettings SimulationSettings = new SimulationSettings();
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
-    MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis;
+    MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis; bool CreatingObstacle;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -103,8 +103,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         robot = new MrRobot(new Vector2(0.5f, 1.0f), new Vector2(MathHelper.DegreesToRadians(0), MathHelper.DegreesToRadians(0)));
         testLine = new Line();
         obstacles = new List<Obstacle>();
-        obstacles.Add(new Obstacle());
+        //obstacles.Add(new Obstacle());
         axis = new Axis();
+        CreatingObstacle = false;
     }
 
     protected override void Dispose(bool disposing)
@@ -217,11 +218,15 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         // Not working anymore...
         //GL.LineWidth(5);
 
+        axis.Draw(shader2D, camera.viewMatrix, camera.projectionMatrix);
+
         robot.Draw(shader,camera.viewMatrix,camera.projectionMatrix);
         //testLine.Draw(shader, camera.viewMatrix, camera.projectionMatrix);
-        //foreach(var obs in obstacles) { obs.Draw(shader, camera.viewMatrix, camera.projectionMatrix); }
-        axis.Draw(shader2D,camera.viewMatrix,camera.projectionMatrix);
+        foreach(var obs in obstacles) { obs.Draw(shader, camera.viewMatrix, camera.projectionMatrix); }
+        
         Controller.Render();
+
+        
 
         SwapBuffers();
     }
@@ -348,13 +353,26 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     {
         base.OnMouseMove(e);
 
-        
-
+       
         //if(this.MouseState.IsButtonPressed(MouseButton.Right))
-        if (this.MouseState[MouseButton.Right])
+        if (this.MouseState[MouseButton.Right] && (!this.KeyboardState[Keys.O]))
         {
             var delta = e.Delta.Y;
             camera.ChangeDistance((float)(delta * 0.01f));
+        }
+
+        if (this.MouseState[MouseButton.Right] && this.KeyboardState[Keys.O])
+        {
+            var spacePos = GetSpacePos();
+            spacePos.Y = -spacePos.Y;
+            if(CreatingObstacle)
+            {
+                EditCurrentObstacle(spacePos);
+            }
+            else
+            {
+                CreateObstacle(spacePos);
+            }
         }
 
         if (this.MouseState[MouseButton.Middle])
@@ -372,6 +390,17 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 robot.alternative_angle.Y = c2.Y;
             }
 
+        }
+    }
+
+    protected override void OnMouseUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseUp(e);
+         
+        if (e.Button == MouseButton.Right) 
+        { 
+            CreatingObstacle = false;
+            Console.WriteLine("PPM UP!");
         }
     }
 
@@ -405,6 +434,12 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         if (this.KeyboardState[Keys.A])
         {
             robot.alt_angle = !robot.alt_angle;
+        }
+
+        if (this.KeyboardState[Keys.P])
+        {
+            obstacles.Add(new Obstacle(new(1.0f, 0.0f), new(1.0f, 1.0f)));
+            
         }
     }
     protected Vector2 GetSpacePos()
@@ -472,6 +507,22 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         altConf = new((float)MySecondAlfa1, (float)-MyAlfa2);
 
         return (conf, altConf);
+    }
+
+    protected void CreateObstacle(Vector2 pos)          // creates new obstacle object and adds it on list (with size of 0)
+    {
+        CreatingObstacle = true;
+        Obstacle obstacle = new Obstacle();
+        obstacle.pos = pos;
+        obstacle.size = new(0.0f, 0.0f);
+        obstacles.Add(obstacle);
+    }
+
+    protected void EditCurrentObstacle(Vector2 pos)     // current means last object on obstacles list
+    {
+        var currentObstacle = obstacles[obstacles.Count-1];
+        var size = pos - currentObstacle.pos;
+        currentObstacle.size = size;
     }
 
     #endregion

@@ -49,6 +49,10 @@ namespace SampleApplication.OpenTK
 
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 2 * sizeof(float));
             GL.EnableVertexAttribArray(1);
+
+            // after setting up all data change it to default
+            GL.BindVertexArray(0);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         }
 
         public void UpdateVAO()     // in this case propably Update will never be used
@@ -68,7 +72,7 @@ namespace SampleApplication.OpenTK
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
 
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 2);
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 2 * sizeof(float));
             GL.EnableVertexAttribArray(1);
         }
 
@@ -80,6 +84,10 @@ namespace SampleApplication.OpenTK
             shader.SetMatrix4("model", Matrix4.CreateScale(10f));
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Lines, 4, DrawElementsType.UnsignedInt, 0);
+
+            // after setting up all data change it to default
+            GL.BindVertexArray(0);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         }
     }
 }
