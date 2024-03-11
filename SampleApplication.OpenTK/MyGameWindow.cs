@@ -85,7 +85,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     RobotSettings RobotSett = new RobotSettings();
     SimulationSettings SimulationSettings = new SimulationSettings();
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
-    MrRobot robot; Line testLine;
+    MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -102,6 +102,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         SetupCamera();
         robot = new MrRobot(new Vector2(0.5f, 1.0f), new Vector2(MathHelper.DegreesToRadians(0), MathHelper.DegreesToRadians(0)));
         testLine = new Line();
+        obstacles = new List<Obstacle>();
+        obstacles.Add(new Obstacle());
+        axis = new Axis();
     }
 
     protected override void Dispose(bool disposing)
@@ -126,6 +129,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     {
         // instead of using path "Shaders/ShaderVerts.glsl and using option "copy to output directory" the path is given directly to the source of shaders (every change gonna be instant)
         shader = new Shader("../../../Shaders/ShaderVert.glsl", "../../../Shaders/ShaderFrag.glsl");
+        shader2D = new Shader("../../../Shaders/2DShaderVert.glsl", "../../../Shaders/2DShaderFrag.glsl");
     }
 
     protected void SetupCamera()
@@ -215,6 +219,8 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         robot.Draw(shader,camera.viewMatrix,camera.projectionMatrix);
         //testLine.Draw(shader, camera.viewMatrix, camera.projectionMatrix);
+        //foreach(var obs in obstacles) { obs.Draw(shader, camera.viewMatrix, camera.projectionMatrix); }
+        axis.Draw(shader2D,camera.viewMatrix,camera.projectionMatrix);
         Controller.Render();
 
         SwapBuffers();
