@@ -56,13 +56,20 @@ namespace SampleApplication.OpenTK
             size = s;
             Random rand = new Random();
             color = new Vector3((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble());
-            verts = new float[12] { -1.0f, -1.0f, 0.0f, 
-                                    1.0f, -1.0f, 0.0f, 
-                                    1.0f, 1.0f, 0.0f,                    
-                                    -1.0f, 1.0f, 0.0f};
+            //verts = new float[12] { -1.0f, -1.0f, 0.0f, 
+            //                        1.0f, -1.0f, 0.0f, 
+            //                        1.0f, 1.0f, 0.0f,                    
+            //                        -1.0f, 1.0f, 0.0f};
+
+            verts = new float[12] { 0.0f, 0.0f, 0.0f,
+                                    1.0f, 0.0f, 0.0f,
+                                    1.0f, 1.0f, 0.0f,
+                                    0.0f, 1.0f, 0.0f};
 
 
-            indices = new int[6] { 0, 3, 1, 
+            //indices = new int[6] { 0, 3, 1, 
+            //                       3, 2, 1 };
+            indices = new int[6] { 0, 3, 1,
                                    3, 2, 1 };
             GenerateVAO();
         }

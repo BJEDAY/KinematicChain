@@ -222,9 +222,13 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 if (ImGui.TreeNode($"{obstacles[i].Name}"))
                 {
                     //ImGui.DragFloat2("Position", new Span<float>(new float[]{currentObstacle.pos.X, currentObstacle.pos.Y}) );
-                    ImGui.DragFloat2("Position", currentObstacle.Position,0.05f);
-                    ImGui.DragFloat2("Size", currentObstacle.Size,0.05f);
-                    ImGui.DragFloat3("Color", currentObstacle.Color,0.001f,0.0f,1.0f,"%.2f");
+                    ImGui.DragFloat2("Position", currentObstacle.Position, 0.05f);
+                    ImGui.DragFloat2("Size", currentObstacle.Size, 0.05f);
+                    ImGui.DragFloat3("Color", currentObstacle.Color, 0.001f, 0.0f, 1.0f, "%.2f");
+                    if (ImGui.Button("Delete"))
+                    {
+                        obstacles.RemoveAt(i);
+                    } 
                     ImGui.TreePop();
                 }
 
