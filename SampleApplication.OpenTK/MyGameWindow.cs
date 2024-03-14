@@ -86,7 +86,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     SimulationSettings SimulationSettings = new SimulationSettings();
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
     MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis; bool CreatingObstacle;
-    int ObstacleCount;
+    int ObstacleCount; ConfigurationSpace space;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -106,6 +106,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         obstacles = new List<Obstacle>();
         //obstacles.Add(new Obstacle());
         axis = new Axis();
+        space = new ConfigurationSpace();
         CreatingObstacle = false;
         ObstacleCount = 0;
     }
@@ -214,6 +215,25 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             }
 
             ImGui.Text("Obstacles:");
+            if(ImGui.Button("Check collision"))
+                {
+                if (obstacles.Count > 0)
+                    {
+                        bool FoundAny = false;
+                        for(int i=0;  i<obstacles.Count; i++)
+                            {
+                                var check = space.CheckCollision(obstacles[i], robot);
+                                if (check) 
+                                    {
+                                        FoundAny = true;
+                                        Console.WriteLine($"Collision detected with obstacle {i+1}");
+                                    }
+                            } 
+                        if ( !FoundAny ) Console.WriteLine($"Collision not detected");
+                    } 
+                else Console.WriteLine("There are no obstacles!");
+                    
+                }
             for (int i = 0; i < obstacles.Count; i++)
             {
                 var currentObstacle = obstacles[i];
@@ -432,7 +452,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         if (e.Button == MouseButton.Right) 
         { 
             CreatingObstacle = false;
-            Console.WriteLine("PPM UP!");
+            //Console.WriteLine("PPM UP!");
         }
     }
 

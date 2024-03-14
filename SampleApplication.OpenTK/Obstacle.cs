@@ -2,6 +2,7 @@
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -25,8 +26,8 @@ namespace SampleApplication.OpenTK
         public Span<float> Position
         {
             get {
-                    return MemoryMarshal.CreateSpan(ref pos.X,2);
-                }
+                return MemoryMarshal.CreateSpan(ref pos.X, 2);
+            }
         }
 
         public Span<float> Size
@@ -74,8 +75,59 @@ namespace SampleApplication.OpenTK
             GenerateVAO();
         }
 
-        public Obstacle() : this(new Vector2(1.0f,1.0f), new Vector2(1.0f, 1.0f)) { }
+        public Obstacle() : this(new Vector2(1.0f, 1.0f), new Vector2(1.0f, 1.0f)) { }
 
+        //public Vector4 GetCorners
+        //{
+        //    get
+        //    {
+        //        if (size.X > 0 && size.Y > 0)   //mycha sunie do góry w prawo więc pozycja to lewy dolny narożnik
+        //        {
+        //            var bottomLeft = pos; 
+        //            var bottomRight = pos + new Vector2(size.X,0.0f);
+        //            var topLeft = pos + new Vector2(0.0f, size.Y);
+        //            var topRight = pos + size;
+
+        //        }
+        //        return new Vector4(0.0f,0.0f, 0.0f, 0.0f);  
+        //    }
+        //}
+
+        public (Vector2 bottomLeft, Vector2 bottomRight, Vector2 topLeft, Vector2 topRight) GetCorners()
+        {
+            Vector2 bottomLeft, bottomRight, topLeft, topRight;
+            bottomLeft = bottomRight = topLeft = topRight = new(0, 0);
+            if (size.X > 0 && size.Y > 0)   //mycha sunie do góry w prawo więc pozycja to lewy dolny narożnik
+            {
+                bottomLeft = pos;
+                bottomRight = pos + new Vector2(size.X, 0.0f);
+                topLeft = pos + new Vector2(0.0f, size.Y);
+                topRight = pos + size;
+            }
+            else if (size.X > 0 && size.Y < 0)
+            {
+                topLeft = pos;
+                topRight = pos + new Vector2(size.X, 0.0f);
+                bottomLeft = pos + new Vector2(0.0f, size.Y);
+                bottomRight = topLeft + size;
+            }
+            else if (size.X <0 && size.Y >0)
+            {
+                bottomRight = pos;
+                bottomLeft = bottomRight + new Vector2(size.X, 0.0f);
+                topRight = bottomRight + new Vector2(0.0f, size.Y);
+                topLeft = bottomRight + size;
+            }
+            else if(size.X<0 && size.Y<0)
+            {
+                topRight = pos;
+                topLeft = topRight+new Vector2(size.X, 0.0f);
+                bottomRight = topRight+new Vector2(0.0f, size.Y);
+                bottomLeft = topRight + size;
+            }
+
+            return (bottomLeft, bottomRight, topLeft, topRight);
+        }
         public void GenerateVAO()
         {
             VAO = GL.GenVertexArray();

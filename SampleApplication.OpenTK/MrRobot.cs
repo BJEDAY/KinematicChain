@@ -72,6 +72,37 @@ namespace SampleApplication.OpenTK
             GL.EnableVertexAttribArray(0);
         }
 
+        public Vector2 Arm1End
+        {
+            get
+            {
+                float deg = 0.0f;
+                if (alt_angle) deg = alternative_angle.X;
+                else deg = angle.X;
+                return new Vector2((float)(Math.Sin(deg) * len.X), (float)(Math.Cos(deg) * len.X));
+            }
+        }
+
+        public Vector2 Arm2End
+        {
+            get
+            {
+                float deg = 0.0f;
+                if (alt_angle) deg = alternative_angle.X;
+                else deg = angle.X;
+
+                float deg2 = 0.0f;
+                if (alt_angle) deg2 = alternative_angle.Y;
+                else deg2 = angle.Y;
+
+                Vector2 end1 = new Vector2((float)(Math.Sin(deg) * len.X), (float)(Math.Cos(deg) * len.X));
+                Vector2 vec = new Vector2((float)(Math.Sin(deg+deg2) * len.Y), (float)(Math.Cos(deg+deg2) * len.Y));
+                Vector2 end2 = end1 + vec;
+
+                return end2;
+            }
+        }
+
         public void Draw(Shader shader, Matrix4 view, Matrix4 perspective)
         {
             shader.Use();
