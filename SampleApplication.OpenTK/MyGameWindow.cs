@@ -4,7 +4,7 @@ using DearImGui;
 using DearImGui.OpenTK;
 using DearImGui.OpenTK.Extensions;
 using DearImPlot;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
@@ -86,7 +86,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     SimulationSettings SimulationSettings = new SimulationSettings();
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
     MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis; bool CreatingObstacle;
-    int ObstacleCount; ConfigurationSpace space;
+    int ObstacleCount; ConfigurationSpace space; Shader TexViewer; Texture test_texture; TextureViewer texViewer;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -109,6 +109,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         space = new ConfigurationSpace();
         CreatingObstacle = false;
         ObstacleCount = 0;
+        //test_texture = new Texture(1500,TextureUnit.Texture0);
+        test_texture = new Texture(GenerateTexData(150),TextureUnit.Texture0);
+        texViewer = new TextureViewer();
     }
 
     protected override void Dispose(bool disposing)
@@ -134,6 +137,21 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         // instead of using path "Shaders/ShaderVerts.glsl and using option "copy to output directory" the path is given directly to the source of shaders (every change gonna be instant)
         shader = new Shader("../../../Shaders/ShaderVert.glsl", "../../../Shaders/ShaderFrag.glsl");
         shader2D = new Shader("../../../Shaders/2DShaderVert.glsl", "../../../Shaders/2DShaderFrag.glsl");
+        TexViewer = new Shader("../../../Shaders/TexViewerVert.glsl", "../../../Shaders/TexViewerFrag.glsl");
+    }
+
+    protected Vector3[,] GenerateTexData(int size)
+    {
+        var res = new Vector3[size,size];
+        for(int i=0; i<size; i++)
+        {
+            for(int j=0; j<size; j++)
+            {
+                if(j%2==0) res[i, j] = new Vector3(0f, 1f, 0f);
+                else res[i, j] = new Vector3(0f,0f, 0f);    
+            }
+        }
+        return res;
     }
 
     protected void SetupCamera()
@@ -265,16 +283,18 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         ImGui.End();
 
+        texViewer.Draw(TexViewer, test_texture);
+
         // Not working anymore...
         //GL.LineWidth(5);
 
         axis.Draw(shader2D, camera.viewMatrix, camera.projectionMatrix);
 
-        robot.Draw(shader,camera.viewMatrix,camera.projectionMatrix);
+        
         //testLine.Draw(shader, camera.viewMatrix, camera.projectionMatrix);
         foreach(var obs in obstacles) { obs.Draw(shader, camera.viewMatrix, camera.projectionMatrix); }
 
-        
+        robot.Draw(shader, camera.viewMatrix, camera.projectionMatrix);
 
         Controller.Render();
 

@@ -15,13 +15,7 @@ namespace SampleApplication.OpenTK
 
         public bool CheckCollision(Obstacle obstacle, MrRobot robot) 
         {
-            //Console.WriteLine($"End of first arm: {robot.Arm1End}");
-            //Console.WriteLine($"End of second arm: {robot.Arm2End}");
             var Corners = obstacle.GetCorners();
-            //Console.WriteLine($"Bottom left corner: {Corners.bottomLeft}");
-            //Console.WriteLine($"Bottom right corner: {Corners.bottomRight}");
-            //Console.WriteLine($"Top left corner: {Corners.topLeft}");
-            //Console.WriteLine($"Top right corner: {Corners.topRight}");
 
             Vector2 end1 = robot.Arm1End;
             Vector2 end2 = robot.Arm2End;
