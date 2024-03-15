@@ -167,7 +167,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         GL.ClearColor(Color.CornflowerBlue);
         GL.Clear(ClearBufferMask.ColorBufferBit);
 
-        ImGui.SetNextWindowSize(new System.Numerics.Vector2(800, 500), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(500, 500), ImGuiCond.Once);
 
 
         if(ImGui.Begin("Settings"))
@@ -283,7 +283,15 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         ImGui.End();
 
-        texViewer.Draw(TexViewer, test_texture);
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(500, 500), ImGuiCond.Once);
+
+        if (ImGui.Begin("Texture"))
+        {
+            ImGui.Image((IntPtr)test_texture.Handle, new System.Numerics.Vector2(500, 500));
+        }
+        ImGui.End();
+
+        //texViewer.Draw(TexViewer, test_texture);
 
         // Not working anymore...
         //GL.LineWidth(5);

@@ -11,7 +11,7 @@ namespace SampleApplication.OpenTK
 {
     public class Texture
     {
-        int Handle;
+        public int Handle;
         TextureUnit Unit;
         
         // default constructor to generate 2D texture with random bytes
