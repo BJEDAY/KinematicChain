@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Vector3 = OpenTK.Mathematics.Vector3;
 
 namespace SampleApplication.OpenTK
 {

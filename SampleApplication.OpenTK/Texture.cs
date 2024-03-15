@@ -54,8 +54,8 @@ namespace SampleApplication.OpenTK
             GL.ActiveTexture(Unit);
             GL.BindTexture(TextureTarget.Texture2D, Handle);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Linear);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
@@ -80,6 +80,13 @@ namespace SampleApplication.OpenTK
             var res = new byte[4 * (int)Math.Pow(size, 2)];
             rand.NextBytes(res);
             return res;
+        }
+
+        public void UpdateTexture(Vector3[,] data)
+        {
+            GL.ActiveTexture(Unit);
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb, data.GetLength(0), data.GetLength(1), 0, PixelFormat.Rgb, PixelType.Float, data);
         }
     }
 }

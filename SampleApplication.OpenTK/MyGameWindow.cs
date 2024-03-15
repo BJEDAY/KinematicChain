@@ -110,7 +110,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         CreatingObstacle = false;
         ObstacleCount = 0;
         //test_texture = new Texture(1500,TextureUnit.Texture0);
-        test_texture = new Texture(GenerateTexData(150),TextureUnit.Texture0);
+        test_texture = new Texture(GenerateTexData(360),TextureUnit.Texture0);
         texViewer = new TextureViewer();
     }
 
@@ -211,6 +211,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 if(ImGui.Button("Update configuration space"))
                 {
                     // odpal funkcje która to ogarnie
+                    space.UpdateSpace(obstacles, robot.len, robot.alt_angle);
                 }
                 if(ImGui.Button("Flood fill"))
                 {
@@ -283,11 +284,12 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         ImGui.End();
 
-        ImGui.SetNextWindowSize(new System.Numerics.Vector2(500, 500), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(520, 550), ImGuiCond.Once);
 
         if (ImGui.Begin("Texture"))
         {
-            ImGui.Image((IntPtr)test_texture.Handle, new System.Numerics.Vector2(500, 500));
+            //ImGui.Image((IntPtr)test_texture.Handle, new System.Numerics.Vector2(500, 500));
+            ImGui.Image((IntPtr)space.spaceTex.Handle, new System.Numerics.Vector2(360, 360));
         }
         ImGui.End();
 

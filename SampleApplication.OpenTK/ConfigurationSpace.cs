@@ -1,17 +1,50 @@
-﻿using System;
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Vector2 = OpenTK.Mathematics.Vector2;
+using Vector3 = OpenTK.Mathematics.Vector3;
+
 
 namespace SampleApplication.OpenTK
 {
     public class ConfigurationSpace
     {
+        int size;
+        private Vector3[,] colors;
+        public Vector3 Background = new Vector3(0,0,0);
+        public Texture spaceTex;
+        public ConfigurationSpace() 
+        {
+            size = 360;
+            colors = new Vector3[size, size];
+            spaceTex = new Texture(colors, TextureUnit.Texture0);
+        }
 
-        public ConfigurationSpace() { }
+        public void UpdateSpace(List<Obstacle> obstacles, Vector2 len, bool alternative_angle)
+        {
+            MrRobot tester = new MrRobot(len, new Vector2(0, 0));
+            tester.alt_angle = alternative_angle;
+
+            for(int i=0;  i<360; i++)
+            {
+                for(int j=0; j<360; j++)
+                {
+                    tester.angle = new Vector2(MathHelper.DegreesToRadians(i), MathHelper.DegreesToRadians(j));
+                    colors[i, j] = Background;
+                    for (int k=0; k<obstacles.Count; k++) 
+                    {
+                        var res = CheckCollision(obstacles[k], tester);
+                        if (res) colors[i, j] = obstacles[k].color;
+                    }
+                }
+            }
+            spaceTex.UpdateTexture(colors);
+        }
 
         public bool CheckCollision(Obstacle obstacle, MrRobot robot) 
         {
@@ -55,7 +88,7 @@ namespace SampleApplication.OpenTK
             float bottom = start.Y < end.Y ? start.Y : end.Y;
             float top = end.Y>start.Y? end.Y : start.Y;
 
-            if (pos.X > left && pos.X < right && pos.Y > bottom && pos.Y < top) return true;
+            if (pos.X >= left && pos.X <= right && pos.Y >= bottom && pos.Y <= top) return true;
             else return false;
         }
 
@@ -68,19 +101,19 @@ namespace SampleApplication.OpenTK
 
             bool FoundIntersection = false;
 
-            if (yLeft > Corners.bottomLeft.Y && yLeft < Corners.topLeft.Y)
+            if (yLeft >= Corners.bottomLeft.Y && yLeft <= Corners.topLeft.Y)
             {
                 if (CheckLineDomain(start, end, new Vector2(Corners.topLeft.X, yLeft))) FoundIntersection = true;
             }
-            if (yRight > Corners.bottomLeft.Y && yRight < Corners.topLeft.Y)
+            if (yRight >= Corners.bottomLeft.Y && yRight <= Corners.topLeft.Y)
             {
                 if (CheckLineDomain(start, end, new Vector2(Corners.topRight.X, yRight))) FoundIntersection = true;
             }
-            if (xTop > Corners.bottomLeft.X && xTop < Corners.topRight.X)
+            if (xTop >= Corners.bottomLeft.X && xTop <= Corners.topRight.X)
             {
                 if (CheckLineDomain(start, end, new Vector2(xTop, Corners.topRight.Y))) FoundIntersection = true;
             }
-            if (xBottom > Corners.bottomLeft.X && xBottom < Corners.topRight.X)
+            if (xBottom >= Corners.bottomLeft.X && xBottom <= Corners.topRight.X)
             {
                 if (CheckLineDomain(start, end, new Vector2(xBottom, Corners.bottomRight.Y))) FoundIntersection = true;
             }
