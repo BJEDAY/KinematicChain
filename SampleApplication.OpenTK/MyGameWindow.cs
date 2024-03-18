@@ -101,6 +101,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         SetupShaders();
         SetupCamera();
+        SetupOpenGL();
         robot = new MrRobot(new Vector2(0.5f, 1.0f), new Vector2(MathHelper.DegreesToRadians(0), MathHelper.DegreesToRadians(0)));
         testLine = new Line();
         obstacles = new List<Obstacle>();
@@ -140,6 +141,17 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         TexViewer = new Shader("../../../Shaders/TexViewerVert.glsl", "../../../Shaders/TexViewerFrag.glsl");
     }
 
+    protected void SetupOpenGL()
+    {
+        GL.Disable(EnableCap.DepthTest);
+        GL.Enable(EnableCap.Blend);
+        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        GL.Enable(EnableCap.ProgramPointSize);
+        //glDisable(GL_DEPTH_TEST);
+        //glEnable(GL_BLEND); //Enable blending.
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
+        //glEnable(GL_PROGRAM_POINT_SIZE);
+    }
     protected Vector3[,] GenerateTexData(int size)
     {
         var res = new Vector3[size,size];
@@ -199,9 +211,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             }
             if (ImGui.TreeNode("End"))
             {
-                ImGui.SliderAngle("Arm1 Angle", ref RobotSett.EndArmAngle1);
-                ImGui.SliderAngle("Arm2 Angle", ref RobotSett.EndArmAngle2);
-                ImGui.Checkbox("Alternative Start", ref RobotSett.AlternativeEnd);
+                ImGui.SliderAngle("Arm1 Angle", ref robot.endAngle.X);
+                ImGui.SliderAngle("Arm2 Angle", ref robot.endAngle.Y);
+                ImGui.Checkbox("Alternative End", ref robot.end_alt_angle);
                 ImGui.TreePop();
             }
 
@@ -457,7 +469,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             }
         }
 
-        if (this.MouseState[MouseButton.Middle])
+        if (this.MouseState[MouseButton.Middle] && this.KeyboardState[Keys.S])
         {
             //Console.WriteLine("Middle Man");
             var res = GetSpacePos();
@@ -471,7 +483,19 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 robot.alternative_angle.X = c2.X;
                 robot.alternative_angle.Y = c2.Y;
             }
+        }
 
+        if (this.MouseState[MouseButton.Middle] && this.KeyboardState[Keys.E])
+        {
+            var res = GetSpacePos();
+
+            var (c1, c2) = InverseKinematic(res);
+            //Console.WriteLine($"Pozycja w przestrzeni sceny: {res}");
+            if (!float.IsNaN(c1.X) && !float.IsNaN(c2.X))
+            {
+                robot.endAngle = c1;
+                robot.endAlternativeAngle = c2;
+            }
         }
     }
 

@@ -173,6 +173,7 @@ namespace SampleApplication.OpenTK
             var s = Matrix4.CreateScale(size.X, size.Y,1.0f);
             shader.SetMatrix4("model", s*t);
             shader.SetVec3("color", color);
+            shader.SetFloat("opacity", 1.0f);
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
