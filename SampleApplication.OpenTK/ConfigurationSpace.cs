@@ -25,7 +25,7 @@ namespace SampleApplication.OpenTK
             spaceTex = new Texture(colors, TextureUnit.Texture0);
         }
 
-        public void UpdateSpace(List<Obstacle> obstacles, Vector2 len, bool alternative_angle)
+        public void UpdateSpace(List<Obstacle> obstacles, Vector2 len, bool alternative_angle, Vector2 startConfig, Vector2 endConfig)
         {
             MrRobot tester = new MrRobot(len, new Vector2(0, 0));
             tester.alt_angle = alternative_angle;
@@ -43,7 +43,22 @@ namespace SampleApplication.OpenTK
                     }
                 }
             }
+
+            var (alf, beta) = GetCorrectAngles(startConfig);
+            colors[alf,beta] = new Vector3(255,255,255);   
+
             spaceTex.UpdateTexture(colors);
+        }
+
+        public (int a, int b) GetCorrectAngles(Vector2 config)
+        {
+            var alf = MathHelper.RadiansToDegrees(config.X);
+            var bet = MathHelper.RadiansToDegrees(config.Y);
+            alf = alf > 0 ? alf : 360 + alf;
+            bet = bet > 0 ? bet : 360 + bet;
+            alf = alf == 360 ? 0 : alf;
+            bet = bet == 360 ? 0 : bet;
+            return ((int)alf, (int)bet);
         }
 
         public bool CheckCollision(Obstacle obstacle, MrRobot robot) 
@@ -76,8 +91,20 @@ namespace SampleApplication.OpenTK
 
         public Vector2 GetLine(Vector2 start, Vector2 end)
         {
-            float a = (start.Y-end.Y) / (start.X-end.X);
-            float b = start.Y - a * start.X;
+            var rangeX = start.X - end.X;
+            var rangeY = start.Y - end.Y;
+            float a, b;
+            if (Math.Abs(rangeX) < 0.01f)   // vertical line
+            {
+                a = float.MaxValue;
+                b = start.X;  // b now hold info about position x of line 
+            }
+            else
+            {
+                a = (start.Y - end.Y) / (start.X - end.X);
+                b = start.Y - a * start.X;
+            }
+            
             return new Vector2(a, b);
         }
 
@@ -94,21 +121,42 @@ namespace SampleApplication.OpenTK
 
         public bool CheckLineIntersection(Vector2 line,Vector2 start, Vector2 end, (Vector2 bottomLeft, Vector2 bottomRight, Vector2 topLeft, Vector2 topRight) Corners)
         {
-            float yLeft = GetIntersectionY(line.X, line.Y, Corners.topLeft.X);
-            float yRight = GetIntersectionY(line.X, line.Y, Corners.topRight.X);
-            float xBottom = GetIntersectionX(line.X, line.Y, Corners.bottomLeft.Y);
-            float xTop = GetIntersectionX(line.X, line.Y, Corners.topLeft.Y);
+            float xBottom = 0.0f;
+            float xTop = 0.0f;
+            float yLeft = 0.0f;
+            float yRight = 0.0f;
+
+            
+
+            if(line.X != float.MaxValue)
+            {
+                xBottom = GetIntersectionX(line.X, line.Y, Corners.bottomLeft.Y);
+                xTop = GetIntersectionX(line.X, line.Y, Corners.topLeft.Y);
+
+                yLeft = GetIntersectionY(line.X, line.Y, Corners.topLeft.X);
+                yRight = GetIntersectionY(line.X, line.Y, Corners.topRight.X);
+            }
+            else
+            {
+                xBottom = line.Y;   // when case of vertical line is detected then info about x pos of line is hold inside b
+                xTop = line.Y;
+            }
 
             bool FoundIntersection = false;
 
-            if (yLeft >= Corners.bottomLeft.Y && yLeft <= Corners.topLeft.Y)
+            if(line.X != float.MaxValue) // if line is vertical then lowest y is the bottom of obstacle and highest the top of obstacle so CheckLineDomain will do the job
             {
-                if (CheckLineDomain(start, end, new Vector2(Corners.topLeft.X, yLeft))) FoundIntersection = true;
+                if (yLeft >= Corners.bottomLeft.Y && yLeft <= Corners.topLeft.Y)
+                {
+                    if (CheckLineDomain(start, end, new Vector2(Corners.topLeft.X, yLeft))) FoundIntersection = true;
+                }
+                if (yRight >= Corners.bottomLeft.Y && yRight <= Corners.topLeft.Y)
+                {
+                    if (CheckLineDomain(start, end, new Vector2(Corners.topRight.X, yRight))) FoundIntersection = true;
+                }
+
             }
-            if (yRight >= Corners.bottomLeft.Y && yRight <= Corners.topLeft.Y)
-            {
-                if (CheckLineDomain(start, end, new Vector2(Corners.topRight.X, yRight))) FoundIntersection = true;
-            }
+
             if (xTop >= Corners.bottomLeft.X && xTop <= Corners.topRight.X)
             {
                 if (CheckLineDomain(start, end, new Vector2(xTop, Corners.topRight.Y))) FoundIntersection = true;

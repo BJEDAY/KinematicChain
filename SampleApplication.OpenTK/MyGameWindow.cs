@@ -211,7 +211,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 if(ImGui.Button("Update configuration space"))
                 {
                     // odpal funkcje która to ogarnie
-                    space.UpdateSpace(obstacles, robot.len, robot.alt_angle);
+                    space.UpdateSpace(obstacles, robot.len, robot.alt_angle, robot.angle,robot.alternative_angle);
                 }
                 if(ImGui.Button("Flood fill"))
                 {
@@ -284,7 +284,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         ImGui.End();
 
-        ImGui.SetNextWindowSize(new System.Numerics.Vector2(520, 550), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(400, 420), ImGuiCond.Once);
 
         if (ImGui.Begin("Texture"))
         {
