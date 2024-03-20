@@ -20,6 +20,11 @@ namespace SampleApplication.OpenTK
         public Vector2 alternative_angle;
         public bool alt_angle;
 
+
+        // so the simulation gonna work in diffrent thread and it's gonna be made inside MyGameWindow, robot object gonna only get currentFrame nad display it (if animation is on)
+        public Vector2 currentFrame;
+        public bool animate;
+
         public bool end_alt_angle;
         public Vector2 endAngle;
         public Vector2 endAlternativeAngle;
@@ -118,12 +123,23 @@ namespace SampleApplication.OpenTK
 
 
             shader.SetFloat("opacity", 1.0f);
+            //if (alt_angle) Render(shader, new Vector2(MathHelper.DegreesToRadians(alternative_angle.X), MathHelper.DegreesToRadians(alternative_angle.Y)));
+            //else Render(shader, new Vector2(MathHelper.DegreesToRadians(angle.X), MathHelper.DegreesToRadians(angle.Y)));
             if (alt_angle) Render(shader, alternative_angle);
-            else Render(shader, angle);
+            else Render(shader,angle);
 
             shader.SetFloat("opacity", 0.5f);
-            if (end_alt_angle) Render(shader, endAlternativeAngle);
+            //if (end_alt_angle) Render(shader, new Vector2(MathHelper.DegreesToRadians(endAlternativeAngle.X),MathHelper.DegreesToRadians(endAlternativeAngle.Y)));
+            //else Render(shader, new Vector2(MathHelper.DegreesToRadians(endAngle.X), MathHelper.DegreesToRadians(endAngle.Y)));
+
+            if (end_alt_angle) Render(shader,endAlternativeAngle);
             else Render(shader, endAngle);
+
+            if (animate)
+            {
+                shader.SetFloat("opacity", 1.0f);
+                Render(shader, new Vector2(MathHelper.DegreesToRadians(currentFrame.X), MathHelper.DegreesToRadians(currentFrame.Y)));
+            }
 
             //// after setting up all data change it to default
             //GL.BindVertexArray(0);

@@ -86,7 +86,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     SimulationSettings SimulationSettings = new SimulationSettings();
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
     MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis; bool CreatingObstacle;
-    int ObstacleCount; ConfigurationSpace space; Shader TexViewer; Texture test_texture; TextureViewer texViewer;
+    int ObstacleCount; ConfigurationSpace space; Shader TexViewer; Texture test_texture; TextureViewer texViewer; SimulationController SimulationController;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -113,6 +113,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         //test_texture = new Texture(1500,TextureUnit.Texture0);
         test_texture = new Texture(GenerateTexData(360),TextureUnit.Texture0);
         texViewer = new TextureViewer();
+        SimulationController = new SimulationController(ref robot);
     }
 
     protected override void Dispose(bool disposing)
@@ -131,6 +132,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         SampleExtraFontImpl();
 
         Controller.Update((float)args.Time);
+        SimulationController.deltaTime = (float)args.Time;
     }
 
     protected void SetupShaders()
@@ -223,11 +225,12 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 if(ImGui.Button("Update configuration space"))
                 {
                     // odpal funkcje która to ogarnie
-                    space.UpdateSpace(obstacles, robot.len, robot.alt_angle, robot.angle,robot.alternative_angle);
+                    space.UpdateSpace(obstacles, robot.len, robot.alt_angle, robot.angle,robot.endAngle);
                 }
                 if(ImGui.Button("Flood fill"))
                 {
                     // odpal funkcje która to ogarnie
+                    space.FloodFill(robot.angle, robot.endAngle);
                 }
                 ImGui.TreePop();
             }
@@ -235,13 +238,18 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             {
                 ImGui.Text("Simulation: "); ImGui.SameLine(); ImGui.Text(SimulationSettings.IsSimulating.ToString());
                 ImGui.Text("Time: "); ImGui.SameLine(); ImGui.Text(SimulationSettings.SimulationTime.ToString());
-                if (ImGui.Button("Start")) { }
+                if (ImGui.Button("Start")) 
+                {
+                    //SimulationController.TestInstance(new Vector2(0, MathHelper.DegreesToRadians(70)));
+                    SimulationController.Start();
+                    SimulationController.path = space.path;
+                }
                 ImGui.SameLine();
-                if (ImGui.Button("Pause")) { }
+                if (ImGui.Button("Pause")) { SimulationController.pause = true; SimulationController.run = false; }
                 ImGui.SameLine();
-                if (ImGui.Button("Stop")) { }
-                ImGui.SliderFloat("Delta", ref SimulationSettings.Delta, 0.01f, 1.0f);
-                ImGui.SliderFloat("Speed", ref SimulationSettings.SimulationSpeed, 0.01f, 1.0f);
+                if (ImGui.Button("Stop")) { SimulationController.Stop(); }
+                ImGui.SliderFloat("Time", ref SimulationController.animationTime, 0.01f, 10.0f);
+                //ImGui.SliderFloat("Speed", ref SimulationSettings.SimulationSpeed, 0.01f, 1.0f);
                 ImGui.TreePop();
             }
 
@@ -317,6 +325,8 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         foreach(var obs in obstacles) { obs.Draw(shader, camera.viewMatrix, camera.projectionMatrix); }
 
         robot.Draw(shader, camera.viewMatrix, camera.projectionMatrix);
+
+        SimulationController.Run();
 
         Controller.Render();
 
@@ -611,6 +621,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         conf = new((float)MyAlfa1, (float)MyAlfa2);
         altConf = new((float)MySecondAlfa1, (float)-MyAlfa2);
+
+        //conf = new((int)MathHelper.RadiansToDegrees(MyAlfa1), (float)MathHelper.RadiansToDegrees(MyAlfa2));
+        //altConf = new((int)MathHelper.RadiansToDegrees(MySecondAlfa1), (int)MathHelper.RadiansToDegrees(- MyAlfa2));
 
         return (conf, altConf);
     }
