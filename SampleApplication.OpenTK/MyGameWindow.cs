@@ -234,13 +234,13 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 if(ImGui.Button("Update configuration space"))
                 {
                     // odpal funkcje która to ogarnie
-                    space.UpdateSpace(obstacles, robot.len, robot.alt_angle, robot.angle,robot.endAngle);
+                    space.UpdateSpace(obstacles, robot);
                 }
                 ImGui.BeginDisabled(space.DisabledToFlood);
                 if (ImGui.Button("Flood fill"))
                 {
                     // odpal funkcje która to ogarnie
-                    space.FloodFill(robot.angle, robot.endAngle);
+                    space.FloodFill(robot);
                 }
                 ImGui.EndDisabled();
                 ImGui.TreePop();
@@ -253,8 +253,9 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 if (ImGui.Button("Start")) 
                 {
                     //SimulationController.TestInstance(new Vector2(0, MathHelper.DegreesToRadians(70)));
-                    SimulationController.Start();
                     SimulationController.path = space.path;
+                    SimulationController.Start();
+                    SimulationController.endNextFrame = false;
                 }
                 ImGui.SameLine();
                 if (ImGui.Button("Pause")) { SimulationController.pause = true; SimulationController.run = false; }

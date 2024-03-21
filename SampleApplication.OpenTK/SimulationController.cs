@@ -16,6 +16,7 @@ namespace SampleApplication.OpenTK
         public float animationTime;
         MrRobot robot;
         public List<Vector2> path;
+        public bool endNextFrame;
         public SimulationController(ref MrRobot instance)
         {
             run = false;
@@ -25,6 +26,7 @@ namespace SampleApplication.OpenTK
             robot = instance;
             animationTime = 1;
             currentTime = 0;
+            endNextFrame = false;
         }
 
         public void TestInstance(Vector2 newAngles)
@@ -55,17 +57,24 @@ namespace SampleApplication.OpenTK
         {
             if(run)
             {
-                currentTime += deltaTime;
-                if (currentTime > animationTime) 
+                if(endNextFrame) 
                 {
                     run = false;
+                    endNextFrame=false;
+                    //robot.animate = false;
+                }
+
+                currentTime += deltaTime;
+                if (currentTime >= animationTime) 
+                {
                     currentTime = animationTime;
-                    robot.animate = false;
+                    endNextFrame =true;
                 }
                 
                 int size = path.Count;
                 int element =(int)((currentTime / animationTime)*(size-1));
                 robot.currentFrame = path[element];
+
             }
 
         }

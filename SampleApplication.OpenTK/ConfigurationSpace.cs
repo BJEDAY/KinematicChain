@@ -41,10 +41,13 @@ namespace SampleApplication.OpenTK
             DisabledToSimulate = true;
         }
 
-        public void UpdateSpace(List<Obstacle> obstacles, Vector2 len, bool alternative_angle, Vector2 startConfig, Vector2 endConfig)
+        public void UpdateSpace(List<Obstacle> obstacles, MrRobot currentRobot)
         {
+            var len = currentRobot.len;
+            var startConfig = currentRobot.alt_angle ? currentRobot.alternative_angle : currentRobot.angle;
+            var endConfig = currentRobot.end_alt_angle ? currentRobot.endAlternativeAngle : currentRobot.endAngle;
             MrRobot tester = new MrRobot(len, new Vector2(0, 0));
-            tester.alt_angle = alternative_angle;
+            //tester.alt_angle = alternative_angle;
 
             for(int i=0;  i<360; i++)
             {
@@ -87,8 +90,10 @@ namespace SampleApplication.OpenTK
             spaceTex.UpdateTexture(colors);
         }
 
-        public void FloodFill(Vector2 startConfig, Vector2 endConfig)
+        public void FloodFill(MrRobot currentRobot)
         {
+            var startConfig = currentRobot.alt_angle ? currentRobot.alternative_angle : currentRobot.angle;
+            var endConfig = currentRobot.end_alt_angle ? currentRobot.endAlternativeAngle : currentRobot.endAngle;
             var startAngles = GetCorrectAngles2(startConfig);
             var endAngles = GetCorrectAngles2(endConfig);
 
@@ -186,15 +191,14 @@ namespace SampleApplication.OpenTK
                 }
             }
 
-            FindPath(endAngles);
+            FindPath(endAngles, new Vector2(MathHelper.RadiansToDegrees(endConfig.X), MathHelper.RadiansToDegrees(endConfig.Y)));
 
-            if (path.Count > 1) DisabledToSimulate = false;
-            else DisabledToSimulate = true;
+
 
             spaceTex.UpdateTexture(colors);
         }
 
-        public void FindPath(Vector2 endAngles)
+        public void FindPath(Vector2 endAngles, Vector2 trueEnd)
         {
             // 1. Starts at the endConfig
             // 2. Search for element to the left,right,up or bottom thats distance value is one less (and add it as next path value)
@@ -232,12 +236,21 @@ namespace SampleApplication.OpenTK
             }
 
             path.Reverse();
+            if (path.Count > 1) DisabledToSimulate = false;
+            else DisabledToSimulate = true;
+
+            path.Add(trueEnd);
+
             var pathColor = new Vector3(255, 255, 0);
 
-            foreach(var elem in path)
+            for(int i=0; i<path.Count-1; i++)
             {
-                colors[(int)elem.X, (int)elem.Y] = pathColor;
+                colors[(int)path[i].X, (int)path[i].Y] = pathColor;
             }
+            //foreach(var elem in path)
+            //{
+                
+            //}
         }
 
         public Vector2 WrapVector2(Vector2 val, float max)
