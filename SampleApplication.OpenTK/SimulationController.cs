@@ -23,7 +23,7 @@ namespace SampleApplication.OpenTK
             stop = false;
             deltaTime = 0;
             robot = instance;
-            animationTime = 5;
+            animationTime = 1;
             currentTime = 0;
         }
 
@@ -34,10 +34,10 @@ namespace SampleApplication.OpenTK
 
         public void Start()
         {
+            if (!pause) currentTime = 0;
             run =true;
             pause = false;
             stop =false;
-            currentTime = 0;
             robot.animate = true;
         }
 
@@ -60,6 +60,7 @@ namespace SampleApplication.OpenTK
                 {
                     run = false;
                     currentTime = animationTime;
+                    robot.animate = false;
                 }
                 
                 int size = path.Count;

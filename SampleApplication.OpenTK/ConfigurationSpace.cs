@@ -23,6 +23,13 @@ namespace SampleApplication.OpenTK
         public Vector3 StartConfigColor = new Vector3(255,0,0);
         public Vector3 EndConfigColor = new Vector3(0, 255, 0);
         public Texture spaceTex;
+
+        // so when at least one config (start or end) is inside obstacle it cannot be done
+        public bool DisabledToFlood;
+        // when path has not been found there is nothind to simulate
+        public bool DisabledToSimulate;
+
+        // update space gonna check if it's enableToFlood and change it's value and FloodFill will check if path has been found and change EnableToSimulate flag
         public ConfigurationSpace() 
         {
             size = 360;
@@ -30,6 +37,8 @@ namespace SampleApplication.OpenTK
             spaceTex = new Texture(colors, TextureUnit.Texture0);
             distance = new float[size, size];
             path = new();
+            DisabledToFlood = true;
+            DisabledToSimulate = true;
         }
 
         public void UpdateSpace(List<Obstacle> obstacles, Vector2 len, bool alternative_angle, Vector2 startConfig, Vector2 endConfig)
@@ -51,11 +60,29 @@ namespace SampleApplication.OpenTK
                 }
             }
 
+            DisabledToFlood = false;
+            tester.angle = startConfig;
+            for(int i=0;i<obstacles.Count;i++)
+            {
+                var res = CheckCollision(obstacles[i], tester);
+                if (res) DisabledToFlood = true;
+            }
+            tester.angle = endConfig;
+            for (int i = 0; i < obstacles.Count; i++)
+            {
+                var res = CheckCollision(obstacles[i], tester);
+                if (res) DisabledToFlood = true;
+            }
+
+
             var (alf, beta) = GetCorrectAngles(startConfig);
             colors[alf, beta] = StartConfigColor;
 
             (alf,beta) = GetCorrectAngles(endConfig);
             colors[alf, beta] = EndConfigColor;
+
+            // After updating space there is no info if the path could be found 
+            DisabledToSimulate = true; 
 
             spaceTex.UpdateTexture(colors);
         }
@@ -160,6 +187,9 @@ namespace SampleApplication.OpenTK
             }
 
             FindPath(endAngles);
+
+            if (path.Count > 1) DisabledToSimulate = false;
+            else DisabledToSimulate = true;
 
             spaceTex.UpdateTexture(colors);
         }

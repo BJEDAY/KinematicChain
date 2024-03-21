@@ -87,6 +87,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
     Shader shader; Camera camera; ViewPerspectiveSettings perspectiveSettings;
     MrRobot robot; Line testLine; List<Obstacle> obstacles;  Shader shader2D; Axis axis; bool CreatingObstacle;
     int ObstacleCount; ConfigurationSpace space; Shader TexViewer; Texture test_texture; TextureViewer texViewer; SimulationController SimulationController;
+    bool EditMode; bool PathFindingMode;
 
     public MyGameWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
         : base(gameWindowSettings, nativeWindowSettings)
@@ -114,6 +115,8 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         test_texture = new Texture(GenerateTexData(360),TextureUnit.Texture0);
         texViewer = new TextureViewer();
         SimulationController = new SimulationController(ref robot);
+        EditMode = true;
+        PathFindingMode = false;
     }
 
     protected override void Dispose(bool disposing)
@@ -187,16 +190,19 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
         if(ImGui.Begin("Settings"))
         {
             ImGui.Text("Select program working mode:");
-            if(ImGui.Checkbox("Edit", ref SimulationSettings.EditMode))
+            if(ImGui.Checkbox("Edit", ref EditMode))
             {
-                SimulationSettings.PathFindingMode = false;
+                //SimulationSettings.PathFindingMode = false;
+                PathFindingMode = !EditMode;
             }
             ImGui.SameLine();
-            if(ImGui.Checkbox("Path finding", ref SimulationSettings.PathFindingMode))
+            if(ImGui.Checkbox("Path finding", ref PathFindingMode))
             {
-                SimulationSettings.EditMode = false;
+                //SimulationSettings.EditMode = false;
+                EditMode = !PathFindingMode;
             }
 
+            ImGui.BeginDisabled(PathFindingMode);
             ImGui.Text("Edit options:");
             if (ImGui.TreeNode("Lenghts"))
             {
@@ -218,26 +224,32 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 ImGui.Checkbox("Alternative End", ref robot.end_alt_angle);
                 ImGui.TreePop();
             }
+            ImGui.EndDisabled();
 
+            ImGui.BeginDisabled(EditMode);
             ImGui.Text("Path finding options:");
             if(ImGui.TreeNode("Path finding"))
             {
+                
                 if(ImGui.Button("Update configuration space"))
                 {
                     // odpal funkcje która to ogarnie
                     space.UpdateSpace(obstacles, robot.len, robot.alt_angle, robot.angle,robot.endAngle);
                 }
-                if(ImGui.Button("Flood fill"))
+                ImGui.BeginDisabled(space.DisabledToFlood);
+                if (ImGui.Button("Flood fill"))
                 {
                     // odpal funkcje która to ogarnie
                     space.FloodFill(robot.angle, robot.endAngle);
                 }
+                ImGui.EndDisabled();
                 ImGui.TreePop();
             }
             if(ImGui.TreeNode("Simulation"))
             {
                 ImGui.Text("Simulation: "); ImGui.SameLine(); ImGui.Text(SimulationSettings.IsSimulating.ToString());
                 ImGui.Text("Time: "); ImGui.SameLine(); ImGui.Text(SimulationSettings.SimulationTime.ToString());
+                ImGui.BeginDisabled(space.DisabledToSimulate);
                 if (ImGui.Button("Start")) 
                 {
                     //SimulationController.TestInstance(new Vector2(0, MathHelper.DegreesToRadians(70)));
@@ -249,10 +261,13 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                 ImGui.SameLine();
                 if (ImGui.Button("Stop")) { SimulationController.Stop(); }
                 ImGui.SliderFloat("Time", ref SimulationController.animationTime, 0.01f, 10.0f);
+                ImGui.EndDisabled();
                 //ImGui.SliderFloat("Speed", ref SimulationSettings.SimulationSpeed, 0.01f, 1.0f);
                 ImGui.TreePop();
             }
+            ImGui.EndDisabled();
 
+            ImGui.BeginDisabled(PathFindingMode);
             ImGui.Text("Obstacles:");
             if(ImGui.Button("Check collision"))
                 {
@@ -290,14 +305,14 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
                     } 
                     ImGui.TreePop();
                 }
-
             }
+            ImGui.EndDisabled();
 
 
-            
+
             //if (ImGui.TreeNode("Obstacles"))
             //{
-                //ImGui.TreePop();
+            //ImGui.TreePop();
             //}
         }
 
@@ -465,7 +480,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             camera.ChangeDistance((float)(delta * 0.01f));
         }
 
-        if (this.MouseState[MouseButton.Right] && this.KeyboardState[Keys.O])
+        if (this.MouseState[MouseButton.Right] && this.KeyboardState[Keys.O] && EditMode)
         {
             var spacePos = GetSpacePos();
             spacePos.Y = -spacePos.Y;
@@ -479,7 +494,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             }
         }
 
-        if (this.MouseState[MouseButton.Middle] && this.KeyboardState[Keys.S])
+        if (this.MouseState[MouseButton.Middle] && this.KeyboardState[Keys.S] && EditMode)
         {
             //Console.WriteLine("Middle Man");
             var res = GetSpacePos();
@@ -495,7 +510,7 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
             }
         }
 
-        if (this.MouseState[MouseButton.Middle] && this.KeyboardState[Keys.E])
+        if (this.MouseState[MouseButton.Middle] && this.KeyboardState[Keys.E] && EditMode)
         {
             var res = GetSpacePos();
 
@@ -618,6 +633,11 @@ internal sealed class MyGameWindow : GameWindowBaseWithDebugContext
 
         //Console.WriteLine($"MyAlfa1 angle: {MathHelper.RadiansToDegrees(MyAlfa1)}");
         //Console.WriteLine($"MyAlfa2 angle: {MathHelper.RadiansToDegrees(MyAlfa2)}");
+
+        // angles are defined by integer values, so when angle in radians is not integer in degrees it must be changed
+        //MyAlfa1 = MathHelper.DegreesToRadians((int)MathHelper.RadiansToDegrees(MyAlfa1));
+        //MyAlfa2 = MathHelper.DegreesToRadians((int)MathHelper.RadiansToDegrees(MyAlfa2));
+        //MySecondAlfa1 = MathHelper.DegreesToRadians((int)MathHelper.RadiansToDegrees(MySecondAlfa1));
 
         conf = new((float)MyAlfa1, (float)MyAlfa2);
         altConf = new((float)MySecondAlfa1, (float)-MyAlfa2);
