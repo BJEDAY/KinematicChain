@@ -2,7 +2,7 @@ Pathfinding algorithm for two-dimensional kinematic chain. It allows user to cha
 Futhermore the position of the chain can be also changed with a mouse click on any point in the workspace. It's calculated by solving a simple inverse kinematics task.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/0a7f0472-3025-443d-a6d9-00e281cf7ac4](https://github.com/user-attachments/assets/0b3d7fc5-4775-4835-bb6f-70e99dc159b8" width =700 height=auto>
+  <img src="https://github.com/user-attachments/assets/678bf474-ec64-45d0-95c8-775935d9f792" width =700 height=auto>
 </p>
 
 
