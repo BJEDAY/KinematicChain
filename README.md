@@ -17,6 +17,7 @@ Futhermore the position of the chain can be also changed with a mouse click on a
   <img src="https://github.com/user-attachments/assets/2b4e68ea-7408-4e81-9084-eced97088107" width =700 height=auto>
 </p>
 
+Technology: C# | ImGui | OpenTK
 
 # DearImGui
 
