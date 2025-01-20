@@ -1,3 +1,15 @@
+Pathfinding algorithm for two-dimensional kinematic chain. It allows user to change two lenghts of the chain, setup it's initial and final postion and put some obstacles on the scene. 
+Futhermore the position of the chain can be also changed with a mouse click on any point in the workspace. It's calculated by solving a simple inverse kinematics task.
+
+![image](https://github.com/user-attachments/assets/0b3d7fc5-4775-4835-bb6f-70e99dc159b8)
+
+
+
+
+
+
+
+
 
 # DearImGui
 
